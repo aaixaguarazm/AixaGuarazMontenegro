@@ -167,52 +167,55 @@ VALUES (10,6,1,599);
 
 -- Proveedores
 INSERT INTO Proveedores (nombre, direccion, telefono, email)
-VALUES ('Apple Arg.', 'Palermo, Ba', '111-111-1114', 'martin@gmail.com');
+VALUES ('MegaTech.', 'Av.Maipu 2234', '115466789', 'info@megatech.com');
 
 INSERT INTO Proveedores (nombre, contacto, direccion, telefono, email)
-VALUES ('Samsung Arg', 'Belgrano, BA', '111-111-1115', 'jaun@gmail.com');
+VALUES ('TecnoPro', 'Aguirre 456', '1124355778', 'ventas@tecno-pro.com');
 
 -- Compras_proveedor
 INSERT INTO Compras_Proveedor (id_proveedor, id_producto, cantidad, fecha_compra)
-VALUES (1, 1, 50, '2023-05-01');
+VALUES (1, 1, 5, '2024-03-01');
 
 INSERT INTO Compras_Proveedor (id_proveedor, id_producto, cantidad, fecha_compra)
-VALUES (1, 3, 30, '2023-05-05');
+VALUES (1, 3, 3, '2024-05-05');
 
 INSERT INTO Compras_Proveedor (id_proveedor, id_producto, cantidad, fecha_compra)
-VALUES (2, 2, 40, '2023-05-10');
+VALUES (1, 4, 10, '2024-06-05');
 
 INSERT INTO Compras_Proveedor (id_proveedor, id_producto, cantidad, fecha_compra)
-VALUES (2, 4, 100, '2023-05-15');
+VALUES (2, 2, 2, '2024-03-10');
+
+INSERT INTO Compras_Proveedor (id_proveedor, id_producto, cantidad, fecha_compra)
+VALUES (2, 6,5 ,'2024-04-15');
 
 -- Inventario
 INSERT INTO Inventario (id_producto, entrada, salida, stock_actual)
-VALUES (1, 100, 50, 50);
+VALUES (1, 5, 7, 15);
 
 INSERT INTO Inventario (id_producto, entrada, salida, stock_actual)
-VALUES (2, 40, 0, 40);
+VALUES (2, 2, 2, 10);
 
 INSERT INTO Inventario (id_producto, entrada, salida, stock_actual)
-VALUES (3, 30, 0, 30);
+VALUES (3, 3, 5, 8);
 
 INSERT INTO Inventario (id_producto, entrada, salida, stock_actual)
-VALUES (4, 100, 0, 100);
+VALUES (4, 10, 1, 10);
 
 INSERT INTO Inventario (id_producto, entrada, salida, stock_actual)
-VALUES (4, 100, 0, 100);
+VALUES (5, 0, 0, 6);
 
 INSERT INTO Inventario (id_producto, entrada, salida, stock_actual)
-VALUES (1, 100, 50, 50);
+VALUES (6, 5, 1, 10);
 
 -- Consultas Sql 
 
--- Cantidad de pedidos mensuales
+-- Pedidos Mensuales
 SELECT YEAR(fecha_pedido) AS Anio, MONTH(fecha_pedido) AS Mes, COUNT(*) AS Cantidad_pedidos
 FROM Pedido
 GROUP BY YEAR(fecha_pedido), MONTH(fecha_pedido)
 ORDER BY Anio, Mes;
 
--- Cantidad mensual pedida de cada artículo
+-- Articulo x mes
 SELECT YEAR(P.fecha_pedido) AS Anio, MONTH(P.fecha_pedido) AS Mes, PR.nombre AS Articulo, SUM(DP.cantidad) AS Cantidad_pedida
 FROM Pedido P
 INNER JOIN Detalle_Pedido DP ON P.id_pedido = DP.id_pedido
@@ -228,32 +231,32 @@ INNER JOIN Producto PR ON DP.id_producto = PR.id_producto
 GROUP BY PR.nombre, YEAR(P.fecha_pedido), MONTH(P.fecha_pedido)
 ORDER BY Cantidad_pedida DESC;
 
--- Clientes con mas pedidos realizados
+-- Clientes con más pedidos realizados
 SELECT C.nombre AS Cliente, COUNT(*) AS Cantidad_pedidos -- count (id_cliente)
 FROM Cliente C
 LEFT JOIN Pedido P ON C.id_cliente = P.id_cliente
 GROUP BY C.nombre
 ORDER BY Cantidad_pedidos DESC;
 
--- Ingresos mensual
-SELECT YEAR(fecha_pedido) AS Anio, MONTH(fecha_pedido) AS Mes, SUM(DP.cantidad * DP.precio_unitario) AS Ingreso_total
+-- Ingresos por mes
+SELECT YEAR(fecha_pedido) AS Anio, MONTH(fecha_pedido) AS Mes, SUM(DP.cantidad * DP.precio_unit) AS Ingreso_total
 FROM Pedido P
 INNER JOIN Detalle_Pedido DP ON P.id_pedido = DP.id_pedido
 GROUP BY YEAR(fecha_pedido), MONTH(fecha_pedido)
 ORDER BY Anio, Mes;
 
--- Productos con stock muy bajo
+-- Productos con menor stock
 SELECT nombre AS Producto, stock_disponible AS Stock_disponible
 FROM Producto
 WHERE stock_disponible < 10;
 
--- Pedidos pendientes de entrega
+-- Pedidos pendientes
 SELECT P.id_pedido AS Pedido, C.nombre AS Cliente, P.fecha_pedido AS Fecha_del_pedido
 FROM Pedido P
 INNER JOIN Cliente C ON P.id_cliente = C.id_cliente
 WHERE P.estado_pedido = 'pendiente';
 
--- Productos mas vendido
+-- Producto más vendido
 SELECT PR.categoria AS Categoria, PR.nombre AS Producto, SUM(DP.cantidad) AS Cantidad_vendida
 FROM Pedido P
 INNER JOIN Detalle_Pedido DP ON P.id_pedido = DP.id_pedido
@@ -261,14 +264,14 @@ INNER JOIN Producto PR ON DP.id_producto = PR.id_producto
 GROUP BY PR.categoria, PR.nombre
 ORDER BY PR.categoria, Cantidad_vendida DESC;
 
--- Proveedores con mas productos suministrados
+-- Proveedor con más productos suministrados
 SELECT PV.nombre AS Proveedor, COUNT(*) AS Cantidad_productos_suministrados
 FROM Proveedores PV
 INNER JOIN Compras_Proveedor CP ON PV.id_proveedor = CP.id_proveedor
 GROUP BY PV.nombre
 ORDER BY Cantidad_productos_suministrados DESC;
 
--- Historial de compras del cliente id=2
+-- Historial de compras del cliente id=4
 SELECT P.id_pedido AS Pedido, P.fecha_pedido AS Fecha_del_pedido, P.estado_pedido AS Estado_del_pedido, SUM(DP.cantidad * DP.precio_unit) AS Total_del_pedido
 FROM Pedido P
 INNER JOIN Detalle_Pedido DP ON P.id_pedido = DP.id_pedido
